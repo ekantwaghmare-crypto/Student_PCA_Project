@@ -1,1527 +1,324 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Student PCA Analyzer</title>
-
-    <!-- Plotly -->
-    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-
-    <style>
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f7fb;
-            color: #1f2937;
-            line-height: 1.6;
-        }
-
-        /* ==============================
-           NAVBAR
-        ============================== */
-
-        nav {
-            background: #111827;
-            color: white;
-            padding: 15px 7%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 21px;
-            font-weight: bold;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 22px;
-            font-size: 14px;
-        }
-
-        nav a:hover {
-            opacity: 0.75;
-        }
-
-        /* ==============================
-           HERO
-        ============================== */
-
-        .hero {
-            background: linear-gradient(
-                135deg,
-                #111827,
-                #374151
-            );
-
-            color: white;
-            padding: 85px 7%;
-            text-align: center;
-        }
-
-        .hero h1 {
-            font-size: 44px;
-            margin-bottom: 15px;
-        }
-
-        .hero p {
-            max-width: 800px;
-            margin: auto;
-            font-size: 18px;
-            opacity: 0.9;
-        }
-
-        .hero-button {
-            display: inline-block;
-            margin-top: 28px;
-            padding: 13px 25px;
-            background: white;
-            color: #111827;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-        }
-
-        /* ==============================
-           GENERAL SECTION
-        ============================== */
-
-        section {
-            padding: 60px 7%;
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 35px;
-        }
-
-        .section-title h2 {
-            font-size: 30px;
-            margin-bottom: 8px;
-        }
-
-        .section-title p {
-            color: #6b7280;
-        }
-
-        /* ==============================
-           CARDS
-        ============================== */
-
-        .cards {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(220px, 1fr));
-
-            gap: 20px;
-        }
-
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow:
-                0 5px 18px rgba(0,0,0,0.07);
-        }
-
-        .card h3 {
-            margin-bottom: 10px;
-        }
-
-        .card p {
-            color: #6b7280;
-        }
-
-        /* ==============================
-           WORKFLOW
-        ============================== */
-
-        .workflow {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 25px;
-        }
-
-        .workflow-step {
-            background: white;
-            padding: 15px 18px;
-            border-radius: 8px;
-            box-shadow:
-                0 4px 12px rgba(0,0,0,0.06);
-
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .arrow {
-            display: flex;
-            align-items: center;
-            font-size: 22px;
-            color: #6b7280;
-        }
-
-        /* ==============================
-           UPLOAD
-        ============================== */
-
-        .upload-box {
-            max-width: 700px;
-            margin: auto;
-            background: white;
-            padding: 35px;
-            border-radius: 14px;
-
-            box-shadow:
-                0 8px 25px rgba(0,0,0,0.08);
-
-            text-align: center;
-        }
-
-        .upload-box input[type="file"] {
-            margin: 20px 0;
-            padding: 10px;
-        }
-
-        .button {
-            display: inline-block;
-            border: none;
-            background: #111827;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 7px;
-            cursor: pointer;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .button:hover {
-            opacity: 0.85;
-        }
-
-        .button.secondary {
-            background: #4b5563;
-        }
-
-        /* ==============================
-           ERROR
-        ============================== */
-
-        .error {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 15px;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        /* ==============================
-           RESULT SECTION
-        ============================== */
-
-        .results {
-            background: #eef2ff;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(180px, 1fr));
-
-            gap: 18px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 22px;
-            border-radius: 12px;
-            text-align: center;
-
-            box-shadow:
-                0 5px 16px rgba(0,0,0,0.06);
-        }
-
-        .stat-card h3 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-
-        .stat-card p {
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        /* Important PCA result */
-
-        .variance-highlight {
-            background: white;
-            padding: 30px;
-            border-radius: 14px;
-            text-align: center;
-            margin-bottom: 30px;
-
-            box-shadow:
-                0 7px 22px rgba(0,0,0,0.07);
-        }
-
-        .variance-highlight h2 {
-            margin-bottom: 10px;
-        }
-
-        .variance-number {
-            font-size: 48px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .variance-highlight p {
-            color: #6b7280;
-        }
-
-        /* ==============================
-           FEATURE LIST
-        ============================== */
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(280px, 1fr));
-
-            gap: 20px;
-            margin-top: 25px;
-        }
-
-        .feature-box {
-            background: white;
-            padding: 22px;
-            border-radius: 12px;
-
-            box-shadow:
-                0 5px 16px rgba(0,0,0,0.06);
-        }
-
-        .feature-box h3 {
-            margin-bottom: 15px;
-        }
-
-        .feature-list {
-            max-height: 250px;
-            overflow-y: auto;
-            font-size: 14px;
-        }
-
-        .feature-list span {
-            display: inline-block;
-            background: #f3f4f6;
-            padding: 5px 9px;
-            border-radius: 5px;
-            margin: 3px;
-        }
-
-        /* ==============================
-           PROCESSING
-        ============================== */
-
-        .process-box {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin: 25px 0;
-
-            box-shadow:
-                0 5px 16px rgba(0,0,0,0.06);
-        }
-
-        .process-box ul {
-            margin-left: 22px;
-        }
-
-        .process-box li {
-            margin: 7px 0;
-        }
-
-        /* ==============================
-           CHARTS
-        ============================== */
-
-        .chart-grid {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(400px, 1fr));
-
-            gap: 20px;
-            margin-top: 25px;
-        }
-
-        .chart-box {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-
-            box-shadow:
-                0 5px 16px rgba(0,0,0,0.06);
-        }
-
-        /* ==============================
-           TABLES
-        ============================== */
-
-        .table-container {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            overflow-x: auto;
-            margin-top: 25px;
-
-            box-shadow:
-                0 5px 16px rgba(0,0,0,0.06);
-        }
-
-        .table-container h3 {
-            margin-bottom: 15px;
-        }
-
-        .data-table {
-            border-collapse: collapse;
-            width: 100%;
-            font-size: 13px;
-        }
-
-        .data-table th,
-        .data-table td {
-            border: 1px solid #d1d5db;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .data-table th {
-            background: #111827;
-            color: white;
-        }
-
-        .data-table tr:nth-child(even) {
-            background: #f9fafb;
-        }
-
-        /* ==============================
-           ACTIONS
-        ============================== */
-
-        .actions {
-            text-align: center;
-            margin-top: 35px;
-        }
-
-        .actions .button {
-            margin: 5px;
-        }
-
-        /* ==============================
-           FOOTER
-        ============================== */
-
-        footer {
-            background: #111827;
-            color: white;
-            text-align: center;
-            padding: 30px 7%;
-        }
-
-        footer p {
-            opacity: 0.8;
-            font-size: 14px;
-        }
-
-        /* ==============================
-           RESPONSIVE
-        ============================== */
-
-        @media (max-width: 700px) {
-
-            nav {
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            nav a {
-                margin-left: 8px;
-                margin-right: 8px;
-            }
-
-            .hero h1 {
-                font-size: 32px;
-            }
-
-            .chart-grid {
-                grid-template-columns: 1fr;
-            }
-
-            section {
-                padding: 45px 5%;
-            }
-        }
-
-    </style>
-</head>
-
-
-<body>
-
-
-<!-- =====================================================
-     NAVIGATION
-===================================================== -->
-
-<nav>
-
-    <div class="logo">
-        Student PCA Analyzer
-    </div>
-
-    <div>
-
-        <a href="#home">
-            Home
-        </a>
-
-        <a href="#about">
-            About PCA
-        </a>
-
-        <a href="#workflow">
-            Workflow
-        </a>
-
-        <a href="#analysis">
-            Analysis
-        </a>
-
-        {% if rows is defined %}
-        <a href="#results">
-            Results
-        </a>
-        {% endif %}
-
-    </div>
-
-</nav>
-
-
-<!-- =====================================================
-     HERO
-===================================================== -->
-
-<section class="hero" id="home">
-
-    <h1>
-        Student PCA Analyzer
-    </h1>
-
-    <p>
-        A web-based machine learning module for
-        preprocessing student performance data,
-        applying Principal Component Analysis,
-        retaining approximately 95% cumulative variance,
-        and visualizing important patterns.
-    </p>
-
-    <a
-        href="#analysis"
-        class="hero-button">
-
-        Start Analysis
-
-    </a>
-
-</section>
-
-
-<!-- =====================================================
-     ABOUT PCA
-===================================================== -->
-
-<section id="about">
+from flask import Flask, render_template, request, send_file
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+import plotly.express as px
+import io
+
+app = Flask(__name__)
+
+PCA_FEATURES = [
+    "Hours_Studied",
+    "Attendance",
+    "Sleep_Hours",
+    "Previous_Scores",
+    "Tutoring_Sessions",
+    "Physical_Activity",
+    "Exam_Score"
+]
+
+latest_result = None
+
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    global latest_result
 
-    <div class="section-title">
+    if request.method == "GET":
+        return render_template("index.html", analyzed=False)
 
-        <h2>
-            About Principal Component Analysis
-        </h2>
+    file = request.files.get("file")
 
-        <p>
-            PCA is a dimensionality reduction technique
-            used to transform high-dimensional data into
-            a smaller set of principal components.
-        </p>
+    if file is None or file.filename == "":
+        return render_template(
+            "index.html",
+            analyzed=False,
+            error="Please upload a CSV file."
+        )
 
-    </div>
+    try:
 
+        # Read CSV
+        df = pd.read_csv(file)
 
-    <div class="cards">
+        original_rows = len(df)
+        original_columns = len(df.columns)
+
+        # Remove duplicate rows
+        duplicate_count = int(df.duplicated().sum())
+        df = df.drop_duplicates().copy()
+
+        # Missing values before cleaning
+        missing_before = int(df.isnull().sum().sum())
+
+        # Handle missing values
+        for column in df.columns:
 
-        <div class="card">
+            if df[column].dtype == "object":
+
+                mode_value = df[column].mode()
 
-            <h3>
-                Dimensionality Reduction
-            </h3>
-
-            <p>
-                PCA reduces the number of dimensions while
-                preserving the important variation present
-                in the dataset.
-            </p>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>
-                Variance Preservation
-            </h3>
-
-            <p>
-                The system automatically selects the minimum
-                number of principal components required to
-                retain at least 95% cumulative variance.
-            </p>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>
-                Pattern Visualization
-            </h3>
-
-            <p>
-                PC1 and PC2 are used to visualize student
-                records in a two-dimensional PCA space.
-            </p>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>
-                Feature Interpretation
-            </h3>
-
-            <p>
-                PCA loadings help identify the contribution
-                of processed features to the principal
-                components.
-            </p>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     WORKFLOW
-===================================================== -->
-
-<section id="workflow">
-
-    <div class="section-title">
-
-        <h2>
-            System Workflow
-        </h2>
-
-        <p>
-            Complete data processing and PCA workflow
-        </p>
-
-    </div>
-
-
-    <div class="workflow">
-
-        <div class="workflow-step">
-            Upload Dataset
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="workflow-step">
-            Inspect Data
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="workflow-step">
-            Detect Data Types
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="workflow-step">
-            Remove Duplicates
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="workflow-step">
-            Handle Missing Values
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="workflow-step">
-            Encode Categories
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="workflow-step">
-            Standardize
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="workflow-step">
-            PCA
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="workflow-step">
-            Select ≥95% Variance
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="workflow-step">
-            Visualization
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     ANALYSIS UPLOAD
-===================================================== -->
-
-<section id="analysis">
-
-    <div class="section-title">
-
-        <h2>
-            Dataset Analysis
-        </h2>
-
-        <p>
-            Upload a CSV dataset to perform automated
-            preprocessing and PCA analysis.
-        </p>
-
-    </div>
-
-
-    <div class="upload-box">
-
-        <h3>
-            Upload CSV Dataset
-        </h3>
-
-        <p>
-            Recommended dataset:
-            StudentPerformanceFactors.csv
-        </p>
-
-
-        <form
-            action="/upload"
-            method="POST"
-            enctype="multipart/form-data">
-
-            <input
-                type="file"
-                name="dataset"
-                accept=".csv"
-                required>
-
-            <br>
-
-            <button
-                type="submit"
-                class="button">
-
-                Analyze Dataset
-
-            </button>
-
-        </form>
-
-    </div>
-
-
-    {% if error %}
-
-    <div class="error">
-
-        {{ error }}
-
-    </div>
-
-    {% endif %}
-
-</section>
-
-
-<!-- =====================================================
-     RESULTS
-===================================================== -->
-
-{% if rows is defined %}
-
-<section
-    class="results"
-    id="results">
-
-
-    <div class="section-title">
-
-        <h2>
-            Analysis Results
-        </h2>
-
-        <p>
-            Results generated automatically by the
-            PCA processing pipeline.
-        </p>
-
-    </div>
-
-
-    <!-- ================================================
-         BASIC DATASET STATISTICS
-    ================================================= -->
-
-    <div class="stats-grid">
-
-
-        <div class="stat-card">
-
-            <h3>
-                {{ rows }}
-            </h3>
-
-            <p>
-                Original Records
-            </p>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <h3>
-                {{ columns }}
-            </h3>
-
-            <p>
-                Original Features
-            </p>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <h3>
-                {{ missing_values }}
-            </h3>
-
-            <p>
-                Missing Values
-            </p>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <h3>
-                {{ duplicate_rows }}
-            </h3>
-
-            <p>
-                Duplicate Rows
-            </p>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <h3>
-                {{ processed_feature_count }}
-            </h3>
-
-            <p>
-                Processed Features
-            </p>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <h3>
-                {{ selected_components }}
-            </h3>
-
-            <p>
-                Selected PCA Components
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================================================
-         95% VARIANCE HIGHLIGHT
-    ================================================= -->
-
-    <div class="variance-highlight">
-
-        <h2>
-            PCA Variance Retained
-        </h2>
-
-        <div class="variance-number">
-
-            {{ retained_variance }}%
-
-        </div>
-
-        <p>
-            Cumulative variance retained by
-            {{ selected_components }}
-            principal components.
-        </p>
-
-        <br>
-
-        <p>
-            The system automatically selected the minimum
-            number of components required to reach at least
-            95% cumulative explained variance.
-        </p>
-
-    </div>
-
-
-    <!-- ================================================
-         PC1 / PC2 INFORMATION
-    ================================================= -->
-
-    <div class="stats-grid">
-
-
-        <div class="stat-card">
-
-            <h3>
-                {{ pc1_variance }}%
-            </h3>
-
-            <p>
-                PC1 Explained Variance
-            </p>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <h3>
-                {{ pc2_variance }}%
-            </h3>
-
-            <p>
-                PC2 Explained Variance
-            </p>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <h3>
-                ≥ 95%
-            </h3>
-
-            <p>
-                Target Cumulative Variance
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================================================
-         DATASET PREVIEW
-    ================================================= -->
-
-    <div class="table-container">
-
-        <h3>
-            Dataset Preview
-        </h3>
-
-        {{ preview | safe }}
-
-    </div>
-
-
-    <!-- ================================================
-         FEATURE INFORMATION
-    ================================================= -->
-
-    <div class="feature-grid">
-
-
-        <div class="feature-box">
-
-            <h3>
-                Numerical Features
-            </h3>
-
-            <div class="feature-list">
-
-                {% for feature in numerical_columns %}
-
-                <span>
-                    {{ feature }}
-                </span>
-
-                {% endfor %}
-
-            </div>
-
-        </div>
-
-
-        <div class="feature-box">
-
-            <h3>
-                Categorical Features
-            </h3>
-
-            <div class="feature-list">
-
-                {% for feature in categorical_columns %}
-
-                <span>
-                    {{ feature }}
-                </span>
-
-                {% endfor %}
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================================================
-         PREPROCESSING
-    ================================================= -->
-
-    <div class="process-box">
-
-        <h3>
-            Data Preprocessing
-        </h3>
-
-        <p>
-            {{ preprocessing_status }}
-        </p>
-
-        <br>
-
-        <ul>
-
-            <li>
-                Duplicate records are removed.
-            </li>
-
-            <li>
-                Missing numerical values are replaced
-                using the column mean.
-            </li>
-
-            <li>
-                Missing categorical values are replaced
-                using the column mode.
-            </li>
-
-            <li>
-                Categorical features are converted into
-                numerical form using One-Hot Encoding.
-            </li>
-
-            <li>
-                Numerical features are standardized using
-                StandardScaler.
-            </li>
-
-            <li>
-                PCA is applied to the complete processed
-                feature matrix.
-            </li>
-
-            <li>
-                Components are automatically selected to
-                retain at least 95% cumulative variance.
-            </li>
-
-        </ul>
-
-    </div>
-
-
-    <!-- ================================================
-         CHARTS
-    ================================================= -->
-
-    <div class="section-title">
-
-        <h2>
-            PCA Visualizations
-        </h2>
-
-        <p>
-            Explained variance, cumulative variance and
-            two-dimensional PCA representation.
-        </p>
-
-    </div>
-
-
-    <div class="chart-grid">
-
-
-        <!-- Explained Variance -->
-
-        <div class="chart-box">
-
-            <div id="varianceChart"
-                 style="width:100%;height:450px;">
-            </div>
-
-        </div>
-
-
-        <!-- Cumulative Variance -->
-
-        <div class="chart-box">
-
-            <div id="cumulativeChart"
-                 style="width:100%;height:450px;">
-            </div>
-
-        </div>
-
-
-        <!-- PC1 vs PC2 -->
-
-        <div class="chart-box"
-             style="grid-column: 1 / -1;">
-
-            <div id="pcaChart"
-                 style="width:100%;height:550px;">
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================================================
-         PCA TRANSFORMED DATA
-    ================================================= -->
-
-    <div class="table-container">
-
-        <h3>
-            PCA Transformed Data
-        </h3>
-
-        <p>
-            The table below shows the first 10 records
-            after dimensionality reduction.
-        </p>
-
-        <br>
-
-        {{ pca_preview | safe }}
-
-    </div>
-
-
-    <!-- ================================================
-         PCA LOADINGS
-    ================================================= -->
-
-    <div class="table-container">
-
-        <h3>
-            PCA Feature Loadings
-        </h3>
-
-        <p>
-            Loadings indicate how strongly each processed
-            feature contributes to the principal components.
-        </p>
-
-        <br>
-
-        {{ loadings_table | safe }}
-
-    </div>
-
-
-    <!-- ================================================
-         ACTION BUTTONS
-    ================================================= -->
-
-    <div class="actions">
-
-        <a
-            href="/download"
-            class="button">
-
-            Download PCA Result
-
-        </a>
-
-
-        <a
-            href="/"
-            class="button secondary">
-
-            Analyze New Dataset
-
-        </a>
-
-    </div>
-
-
-</section>
-
-{% endif %}
-
-
-<!-- =====================================================
-     FOOTER
-===================================================== -->
-
-<footer>
-
-    <p>
-        Student PCA Analyzer
-    </p>
-
-    <p>
-        PCA-Based Student Data Analysis
-    </p>
-
-    <p>
-        CSE (AI&ML) | S.B. Jain Institute of Technology,
-        Management & Research, Nagpur
-    </p>
-
-</footer>
-
-
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
-
-{% if rows is defined %}
-
-<script>
-
-    /* ==================================================
-       DATA FROM FLASK
-    ================================================== */
-
-    const componentNumbers =
-        {{ component_numbers | tojson }};
-
-    const varianceValues =
-        {{ variance_values | tojson }};
-
-    const cumulativeValues =
-        {{ cumulative_values | tojson }};
-
-    const pc1Values =
-        {{ pc1_values | tojson }};
-
-    const pc2Values =
-        {{ pc2_values | tojson }};
-
-
-    /* ==================================================
-       1. EXPLAINED VARIANCE CHART
-    ================================================== */
-
-    Plotly.newPlot(
-        "varianceChart",
-
-        [
-            {
-                x: componentNumbers,
-
-                y: varianceValues,
-
-                type: "bar",
-
-                name: "Explained Variance",
-
-                hovertemplate:
-                    "%{x}<br>" +
-                    "Explained Variance: %{y:.2f}%" +
-                    "<extra></extra>"
-            }
-        ],
-
-        {
-
-            title:
-                "Explained Variance by Principal Component",
-
-            xaxis: {
-                title: "Principal Component"
-            },
-
-            yaxis: {
-                title: "Explained Variance (%)"
-            },
-
-            margin: {
-                t: 70,
-                l: 70,
-                r: 30,
-                b: 70
-            },
-
-            paper_bgcolor: "white",
-
-            plot_bgcolor: "white"
-
-        },
-
-        {
-            responsive: true
-        }
-    );
-
-
-    /* ==================================================
-       2. CUMULATIVE VARIANCE CHART
-    ================================================== */
-
-    Plotly.newPlot(
-        "cumulativeChart",
-
-        [
-
-            {
-                x: componentNumbers,
-
-                y: cumulativeValues,
-
-                type: "scatter",
-
-                mode: "lines+markers",
-
-                name: "Cumulative Variance",
-
-                hovertemplate:
-                    "%{x}<br>" +
-                    "Cumulative Variance: %{y:.2f}%" +
-                    "<extra></extra>"
-            },
-
-            {
-                x: componentNumbers,
-
-                y: componentNumbers.map(
-                    function () {
-                        return 95;
-                    }
+                if not mode_value.empty:
+                    df[column] = df[column].fillna(
+                        mode_value.iloc[0]
+                    )
+                else:
+                    df[column] = df[column].fillna("Unknown")
+
+            else:
+
+                df[column] = pd.to_numeric(
+                    df[column],
+                    errors="coerce"
+                )
+
+                mean_value = df[column].mean()
+
+                if pd.notna(mean_value):
+                    df[column] = df[column].fillna(
+                        mean_value
+                    )
+                else:
+                    df[column] = df[column].fillna(0)
+
+        # Missing values after cleaning
+        missing_after = int(df.isnull().sum().sum())
+
+        # Check required PCA features
+        missing_features = [
+            feature
+            for feature in PCA_FEATURES
+            if feature not in df.columns
+        ]
+
+        if missing_features:
+
+            return render_template(
+                "index.html",
+                analyzed=False,
+                error=(
+                    "Required PCA columns are missing: "
+                    + ", ".join(missing_features)
+                )
+            )
+
+        # Select PCA features
+        X = df[PCA_FEATURES].copy()
+
+        # Convert to numeric
+        for column in PCA_FEATURES:
+
+            X[column] = pd.to_numeric(
+                X[column],
+                errors="coerce"
+            )
+
+        # Fill remaining missing values
+        X = X.fillna(X.mean())
+        X = X.fillna(0)
+
+        # Standardization
+        scaler = StandardScaler()
+
+        X_scaled = scaler.fit_transform(X)
+
+        # Full PCA for explained variance
+        pca_full = PCA()
+
+        pca_full.fit(X_scaled)
+
+        explained_variance = (
+            pca_full.explained_variance_ratio_ * 100
+        )
+
+        cumulative_variance = (
+            np.cumsum(
+                pca_full.explained_variance_ratio_
+            ) * 100
+        )
+
+        # Use 6 principal components
+        n_components = min(
+            6,
+            X_scaled.shape[1],
+            X_scaled.shape[0]
+        )
+
+        pca = PCA(
+            n_components=n_components
+        )
+
+        principal_components = pca.fit_transform(
+            X_scaled
+        )
+
+        retained_variance = round(
+            pca.explained_variance_ratio_.sum() * 100,
+            2
+        )
+
+        # PCA column names
+        pca_columns = [
+            f"PC{i}"
+            for i in range(1, n_components + 1)
+        ]
+
+        # PCA result dataframe
+        pca_result = pd.DataFrame(
+            principal_components,
+            columns=pca_columns
+        )
+
+        pca_result.insert(
+            0,
+            "Record",
+            range(1, len(pca_result) + 1)
+        )
+
+        latest_result = pca_result.copy()
+
+        # Explained variance table
+        variance_table = []
+
+        for i in range(n_components):
+
+            variance_table.append({
+                "component": f"PC{i + 1}",
+                "variance": round(
+                    explained_variance[i],
+                    2
                 ),
+                "cumulative": round(
+                    cumulative_variance[i],
+                    2
+                )
+            })
 
-                type: "scatter",
+        # PCA loadings
+        loadings = pca.components_.T
 
-                mode: "lines",
+        loading_table = []
 
-                name: "95% Target",
+        for i, feature in enumerate(PCA_FEATURES):
 
-                line: {
-                    dash: "dash"
-                },
-
-                hovertemplate:
-                    "Target: 95%<extra></extra>"
+            row = {
+                "feature": feature
             }
 
-        ],
+            for j in range(n_components):
 
-        {
+                row[f"PC{j + 1}"] = round(
+                    loadings[i, j],
+                    4
+                )
 
-            title:
-                "Cumulative Explained Variance",
+            loading_table.append(row)
 
-            xaxis: {
-                title: "Number of Principal Components"
-            },
+        # PCA graph
+        graph_df = pd.DataFrame({
+            "PC1": principal_components[:, 0],
+            "PC2": principal_components[:, 1]
+        })
 
-            yaxis: {
-                title: "Cumulative Variance (%)",
-                range: [0, 100]
-            },
+        fig = px.scatter(
+            graph_df,
+            x="PC1",
+            y="PC2",
+            title="PCA Visualization: PC1 vs PC2"
+        )
 
-            margin: {
-                t: 70,
-                l: 70,
-                r: 30,
-                b: 70
-            },
+        fig.update_layout(
+            template="plotly_white",
+            height=500
+        )
 
-            paper_bgcolor: "white",
+        graph_html = fig.to_html(
+            full_html=False,
+            include_plotlyjs="cdn"
+        )
 
-            plot_bgcolor: "white"
+        # Dataset preview
+        preview = df.head(10).to_html(
+            classes="data-table",
+            index=False
+        )
 
-        },
+        # Feature counts
+        numeric_count = len(
+            df.select_dtypes(
+                include=np.number
+            ).columns
+        )
 
-        {
-            responsive: true
-        }
-    );
+        categorical_count = len(
+            df.select_dtypes(
+                include="object"
+            ).columns
+        )
 
+        return render_template(
+            "index.html",
+            analyzed=True,
+            rows=len(df),
+            columns=len(df.columns),
+            original_rows=original_rows,
+            original_columns=original_columns,
+            duplicate_count=duplicate_count,
+            missing_before=missing_before,
+            missing_after=missing_after,
+            numeric_count=numeric_count,
+            categorical_count=categorical_count,
+            preview=preview,
+            variance_table=variance_table,
+            retained_variance=retained_variance,
+            n_components=n_components,
+            loading_table=loading_table,
+            graph_html=graph_html,
+            pca_features=PCA_FEATURES,
+            error=None
+        )
 
-    /* ==================================================
-       3. PC1 VS PC2 SCATTER PLOT
-    ================================================== */
+    except Exception as e:
 
-    const records =
-        pc1Values.map(
-            function (_, index) {
-                return index + 1;
-            }
-        );
-
-
-    Plotly.newPlot(
-        "pcaChart",
-
-        [
-
-            {
-
-                x: pc1Values,
-
-                y: pc2Values,
-
-                mode: "markers",
-
-                type: "scatter",
-
-                name: "Student Records",
-
-                text: records.map(
-                    function (record) {
-                        return "Record " + record;
-                    }
-                ),
-
-                hovertemplate:
-                    "%{text}<br>" +
-                    "PC1: %{x:.4f}<br>" +
-                    "PC2: %{y:.4f}" +
-                    "<extra></extra>"
-
-            }
-
-        ],
-
-        {
-
-            title:
-                "Student Data: PC1 vs PC2",
-
-            xaxis: {
-                title: "Principal Component 1"
-            },
-
-            yaxis: {
-                title: "Principal Component 2"
-            },
-
-            margin: {
-                t: 70,
-                l: 70,
-                r: 30,
-                b: 70
-            },
-
-            paper_bgcolor: "white",
-
-            plot_bgcolor: "white"
-
-        },
-
-        {
-            responsive: true
-        }
-
-    );
-
-</script>
-
-{% endif %}
+        return render_template(
+            "index.html",
+            analyzed=False,
+            error=(
+                "Error while analyzing dataset: "
+                + str(e)
+            )
+        )
 
 
-</body>
+@app.route("/download")
+def download():
 
-</html>
+    global latest_result
+
+    if latest_result is None:
+        return "Please analyze a dataset first."
+
+    output = io.BytesIO()
+
+    latest_result.to_csv(
+        output,
+        index=False
+    )
+
+    output.seek(0)
+
+    return send_file(
+        output,
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name="PCA_Analysis_Result.csv"
+    )
+
+
+if __name__ == "__main__":
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=True
+    )
